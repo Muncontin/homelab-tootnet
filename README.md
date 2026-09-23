@@ -23,15 +23,6 @@ This project does **not** use `.env` files or plaintext variables for credential
 
 Secrets (DB users/passwords, service credentials, etc.) are pulled at runtime from **Bitwarden**, via the `bw` CLI and the `community.general.bitwarden` Ansible lookup plugin. Nothing sensitive is stored in this repository, encrypted or otherwise.
 
-### Requirements before running a playbook
-
-```bash
-bw sync
-export BW_SESSION=$(bw unlock --raw)
-```
-
-Playbooks will fail fast if the Bitwarden vault is locked or a referenced item can't be found.
-
 ## Structure
 
 ```
@@ -41,14 +32,13 @@ ansible/
 ├── playbooks/
 │   └── site.yaml
 └── roles/
-    ├── mongodb_install/
+    ├── mongodb/
     └── ...
 ```
 
-## Running
+## How to run
 
 ```bash
-bw sync
-export BW_SESSION=$(bw unlock --raw)
-ansible-playbook -i inventory/hosts.ini playbooks/site.yaml -K
+sudo chmod +x run_playbook.sh
+./run_playbook.sh
 ```
