@@ -1,0 +1,45 @@
+networks:
+  shared:
+    external: true
+
+services:
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - TZ=Asia/Singapore
+      - VPN_SERVICE_PROVIDER=mullvad
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY={{ gluetun_wireguard_private_key }}
+      - WIREGUARD_ADDRESSES=10.73.27.55/32
+      - SERVER_CITIES=Osaka
+      - DNS_UPSTREAM_RESOLVERS=quad9
+      - FIREWALL_OUTBOUND_SUBNETS=192.168.0.0/24
+    networks:
+      - shared
+    ports:
+      # Wireguard (Using the default ports for wireguard connections)
+      - 51820:51820/udp
+      - 51821:51821/tcp
+      # SearXNG (beholden to change)
+      # - 8084:8084
+      # Qbittorrent (Using the default ports)
+      - 6081:6881 #Qbittorrent WebUI port
+      - 6081:6881/udp
+      - 6011:6011
+      # Lidarr  
+    volumes:
+      - ./gluetun:/gluetun
+      - ./iptables/post-rules.txt:/iptables/post-rules.txt # Additional IP table rules required for wireguard to work
+    restart: unless-stopped
+    sysctls:
+      # Used for wg-easy
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv6.conf.default.forwarding=1

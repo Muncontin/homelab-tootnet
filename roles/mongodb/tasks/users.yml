@@ -1,0 +1,31 @@
+# These are not in use (never called in the mongodb/tasks/main.yml) until I have a specific project in mind that I need to persist across different iterations of the homelab
+# When implementing users, remember to update defaults/main.yml and call the user and passwords from bitwarden!
+
+# Create application users with specific database access
+- name: Create application database user
+  community.mongodb.mongodb_user:
+    login_user: "{{ mongodb_admin_user }}"
+    login_password: "{{ mongodb_admin_password }}"
+    login_database: admin
+    database: myapp
+    name: myapp_user
+    password: "{{ vault_myapp_mongo_password }}" # WILL CONVERT TO BITWARDEN
+    roles:
+      - db: myapp
+        role: readWrite
+    state: present
+  no_log: true
+
+- name: Create read-only user for reporting
+  community.mongodb.mongodb_user:
+    login_user: "{{ mongodb_admin_user }}"
+    login_password: "{{ mongodb_admin_password }}"
+    login_database: admin
+    database: myapp
+    name: reporting_user
+    password: "{{ vault_reporting_mongo_password }}" # WILL CONVERT TO BITWARDEN
+    roles:
+      - db: myapp
+        role: read
+    state: present
+  no_log: true

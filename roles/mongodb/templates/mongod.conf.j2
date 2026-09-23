@@ -1,0 +1,39 @@
+# roles/mongodb_install/templates/mongod.conf.j2
+# MongoDB configuration - managed by Ansible
+# Do not edit manually
+
+# Storage settings
+storage:
+  dbPath: {{ mongodb_dbpath }}
+{% if mongodb_wiredtiger_cache_size_gb %}
+  wiredTiger:
+    engineConfig:
+      cacheSizeGB: {{ mongodb_wiredtiger_cache_size_gb }}
+{% endif %}
+
+# Logging
+systemLog:
+  destination: file
+  logAppend: true
+  path: {{ mongodb_logpath }}
+
+# Network
+net:
+  port: {{ mongodb_port }}
+  bindIp: {{ mongodb_bind_ip }}
+
+# Process management
+processManagement:
+  timeZoneInfo: /usr/share/zoneinfo
+
+{% if mongodb_enable_auth %}
+# Security
+security:
+  authorization: enabled
+{% endif %}
+
+{% if mongodb_replication_replset is defined %}
+# Replication
+replication:
+  replSetName: {{ mongodb_replication_replset }}
+{% endif %}

@@ -1,0 +1,3 @@
+# handlers/main.yml
+- name: restart gluetun stack
+  ansible.builtin.command: bash /opt/containers/gluetun/restart-gluetun-stack.sh

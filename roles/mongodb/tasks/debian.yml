@@ -1,0 +1,61 @@
+# roles/mongodb_install/tasks/debian.yml
+# Install MongoDB on Debian/Ubuntu from the official repository
+---
+- name: Install prerequisite packages
+  apt:
+    name:
+      - gnupg
+      - curl
+      - python3-pymongo
+    state: present
+    update_cache: true
+
+- name: Ensure APT keyring directory exists
+  file:
+    path: /usr/share/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Add MongoDB GPG key
+  get_url:
+    url: "https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc"
+    dest: "/usr/share/keyrings/mongodb-server-{{ mongodb_version }}.asc"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add MongoDB APT repository for Ubuntu/Mint
+  deb822_repository:
+    name: mongodb-org
+    types: deb
+    uris: "https://repo.mongodb.org/apt/ubuntu"
+    suites: "{{ mongodb_apt_codename }}/mongodb-org/{{ mongodb_version }}"
+    components: multiverse
+    architectures:
+      - amd64
+      - arm64
+    signed_by: "/usr/share/keyrings/mongodb-server-{{ mongodb_version }}.asc"
+  when: ansible_facts['distribution'] in ["Ubuntu", "Linux Mint"]
+
+- name: Install MongoDB packages
+  apt:
+    name:
+      - "mongodb-org"
+      - "mongodb-org-server"
+      - "mongodb-org-shell"
+      - "mongodb-org-tools"
+      - "mongodb-mongosh"
+    state: present
+    update_cache: true
+
+- name: Pin MongoDB package version to prevent accidental upgrades
+  copy:
+    dest: /etc/apt/preferences.d/mongodb-org
+    content: |
+      Package: mongodb-org*
+      Pin: version {{ mongodb_version }}.*
+      Pin-Priority: 1001
+    owner: root
+    mode: "0644"

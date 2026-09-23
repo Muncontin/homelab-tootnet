@@ -1,0 +1,39 @@
+- name: Create application directory
+  ansible.builtin.file:
+    path: /opt/containers/gluetun
+    state: directory
+    mode: "0755" # Sets the permissions that the object should have
+
+- name: Copy files to the server
+  ansible.builtin.copy:
+    src: ../files/
+    dest: /opt/containers/gluetun/
+    mode: "0644"
+
+- name: Deploy templated docker-compose.yml with secrets injected
+  ansible.builtin.template:
+    src: ../templates/docker-compose.yml.j2
+    dest: /opt/containers/gluetun/docker-compose.yml
+    mode: "0644"
+  no_log: true
+  notify: restart gluetun stack
+
+- name: Give .sh script executable permissions
+  ansible.builtin.file:
+    path: /opt/containers/gluetun/restart-gluetun-stack.sh
+    mode: "0755"
+
+- name: Deploy the Docker Compose application
+  community.docker.docker_compose_v2:
+    project_src: /opt/containers/gluetun
+    state: present
+    # recreate: always
+  register: compose_result
+  notify: restart gluetun stack
+
+- name: Show deployment status
+  ansible.builtin.debug:
+    msg: |
+      Deployment complete.
+      Containers: {{ compose_result.containers | length }}
+  when: compose_result is changed

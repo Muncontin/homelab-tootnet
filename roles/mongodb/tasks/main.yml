@@ -1,0 +1,61 @@
+# roles/mongodb_install/tasks/main.yml
+# Install MongoDB and optionally enable authentication
+---
+- name: Include OS-specific installation tasks
+  include_tasks: "{{ ansible_os_family | lower }}.yml"
+
+- name: Deploy MongoDB configuration
+  template:
+    src: mongod.conf.j2
+    dest: /etc/mongod.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart mongod
+
+- name: Ensure MongoDB data directory exists
+  file:
+    path: "{{ mongodb_dbpath }}"
+    state: directory
+    owner: mongodb
+    group: mongodb
+    mode: "0755"
+  when: ansible_os_family == "Debian"
+
+- name: Ensure MongoDB is started and enabled
+  systemd:
+    name: "{{ mongodb_service_name }}"
+    state: started
+    enabled: true
+
+- name: Wait for MongoDB to accept connections
+  wait_for:
+    port: "{{ mongodb_port }}"
+    host: 127.0.0.1
+    delay: 3
+    timeout: 60
+
+- name: Configure authentication
+  include_tasks: auth.yml
+  when: mongodb_enable_auth | bool
+
+# Verify MongoDB installation
+- name: Check MongoDB version
+  command: mongod --version
+  register: mongo_version
+  changed_when: false
+
+- name: Display version
+  debug:
+    msg: "{{ mongo_version.stdout_lines[0] }}"
+
+- name: Check MongoDB service status
+  systemd:
+    name: "{{ mongodb_service_name }}"
+  register: service_status
+
+- name: Assert service is running
+  assert:
+    that:
+      - service_status.status.ActiveState == "active"
+    fail_msg: "MongoDB service is not running"

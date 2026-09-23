@@ -1,0 +1,2 @@
+# roles/gluetun/defaults/main.yml
+gluetun_wireguard_private_key: "{{ lookup('community.general.bitwarden', 'gluetun-wireguard-private-key', field='password') | first }}"

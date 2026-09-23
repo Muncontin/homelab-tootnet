@@ -1,0 +1,11 @@
+- name: Install dependencies
+  ansible.builtin.package:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - python3-debian
+    state: present
+    update_cache: true

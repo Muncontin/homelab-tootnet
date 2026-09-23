@@ -1,0 +1,19 @@
+networks:
+  shared:
+    external: true
+
+services:
+  adguardhome:
+    image: adguard/adguardhome
+    container_name: adguardhome
+    networks:
+      - shared
+    ports:
+      - "53:53/tcp" # DNS
+      - "53:53/udp" # DNS
+      # - "3001:3000/tcp" #Setup wizard port 
+      # - "8082:80/tcp" # Main admin web interface port
+    volumes:
+      - ./work:/opt/adguardhome/work
+      - ./conf:/opt/adguardhome/conf
+    restart: unless-stopped

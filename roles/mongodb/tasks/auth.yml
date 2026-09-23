@@ -1,0 +1,39 @@
+# roles/mongodb_install/tasks/auth.yml
+# Create the admin user and enable authentication
+---
+- name: Check if admin user already exists
+  command: >
+    mongosh --quiet --eval
+    "db.getSiblingDB('admin').getUser('{{ mongodb_admin_user }}')"
+    --port {{ mongodb_port }}
+  register: admin_user_check
+  changed_when: false
+  failed_when: false
+
+- name: Create admin user (using localhost exception)
+  command: >
+    mongosh --quiet --eval "
+    db.getSiblingDB('admin').createUser({
+      user: '{{ mongodb_admin_user }}',
+      pwd: '{{ mongodb_admin_password }}',
+      roles: [
+        { role: 'userAdminAnyDatabase', db: 'admin' },
+        { role: 'dbAdminAnyDatabase', db: 'admin' },
+        { role: 'readWriteAnyDatabase', db: 'admin' },
+        { role: 'clusterAdmin', db: 'admin' }
+      ]
+    })" --port {{ mongodb_port }}
+  when: "'null' in admin_user_check.stdout"
+  no_log: true
+
+- name: Verify admin user can authenticate
+  command: >
+    mongosh --quiet
+    -u "{{ mongodb_admin_user }}"
+    -p "{{ mongodb_admin_password }}"
+    --authenticationDatabase admin
+    --eval "db.runCommand({ connectionStatus: 1 })"
+    --port {{ mongodb_port }}
+  register: auth_check
+  changed_when: false
+  # no_log: true

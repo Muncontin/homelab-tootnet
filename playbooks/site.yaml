@@ -1,0 +1,24 @@
+- name: Homelab Setup
+  hosts: myhosts
+  gather_facts: true
+  become: true
+  roles:
+    # Core
+    - common_setup
+    - docker
+
+    # Networking Stack
+    - adguardhome
+    - gluetun
+
+    # Observability
+    - grafana
+
+    # Programming Tools
+    - forgejo
+
+    # Databases
+    - mongodb
+
+    # Misc
+    - searxng

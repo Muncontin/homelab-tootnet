@@ -1,0 +1,12 @@
+# roles/mongodb_install/handlers/main.yml
+# Handlers for MongoDB service management
+---
+- name: restart mongod
+  systemd:
+    name: "{{ mongodb_service_name }}"
+    state: restarted
+
+- name: reload mongod
+  systemd:
+    name: "{{ mongodb_service_name }}"
+    state: reloaded

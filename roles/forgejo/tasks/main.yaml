@@ -1,0 +1,24 @@
+- name: Create application directory
+  ansible.builtin.file:
+    path: /opt/containers/forgejo
+    state: directory
+    mode: "0755" # Sets the permissions that the object should have
+
+- name: Copy docker-compose.yml to the server
+  ansible.builtin.copy:
+    src: ../files/docker-compose.yml
+    dest: /opt/containers/forgejo/docker-compose.yml
+    mode: "0644"
+
+- name: Deploy the Docker Compose application
+  community.docker.docker_compose_v2:
+    project_src: /opt/containers/forgejo
+    state: present
+    recreate: always
+  register: compose_result
+
+- name: Show deployment status
+  ansible.builtin.debug:
+    msg: |
+      Deployment complete.
+      Containers: {{ compose_result.containers | length }}
