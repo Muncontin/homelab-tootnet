@@ -39,6 +39,20 @@
   include_tasks: auth.yml
   when: mongodb_enable_auth | bool
 
+- name: Allow MongoDB from LAN
+  community.general.ufw:
+    rule: allow
+    port: "{{ mongodb_port }}"
+    proto: tcp
+    src: 192.168.0.0/24
+
+- name: Allow MongoDB from VPN
+  community.general.ufw:
+    rule: allow
+    port: "{{ mongodb_port }}"
+    proto: tcp
+    src: 10.8.0.0/24
+
 # Verify MongoDB installation
 - name: Check MongoDB version
   command: mongod --version

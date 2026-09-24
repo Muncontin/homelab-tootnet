@@ -1,6 +1,6 @@
 # Homelab Ansible Automation
 
-Ansible automation for deploying and managing part of my homelab infrastructure. This is still in progress
+Ansible automation for deploying and managing part of my homelab infrastructure. This is still in progress.
 
 ## What this deploys
 
