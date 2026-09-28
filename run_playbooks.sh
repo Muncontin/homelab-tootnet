@@ -1,32 +1,49 @@
-# In the event where my dumbass forgets the commands
-#ansible-playbook -i inventory/inventory.ini main-playbook.yaml -K
-
-
-# Update this shell script to check if bitwarden cli is installed, if it is:
-# 1. Check if the user has logged into bw cli
-# 2. If yes, obtain the target machine password directly from bw's vault
-# 3. If no, prompt the user for target machine's password to fulfil the become parameter via the -K command
-
-#SYNC!!!! bitwarden and then unlock the session for ansible to use required credentials
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
-echo "==> Syncing Bitwarden vault..."
-bw sync
+# ansible-playbook -i inventory/hosts.ini playbooks/site.yaml -K   (manual version)
+# Usage: ./run.sh [extra ansible-playbook args, e.g. --tags traefik]
 
-echo "==> Unlocking Bitwarden vault"
-echo "    Enter your Bitwarden master password when prompted:"
-export BW_SESSION=$(bw unlock --raw)
+INVENTORY="inventory/hosts.ini"
+PLAYBOOK="playbooks/site.yaml"
+BECOME_ITEM="Hydaelyn Machine password"   # name of the Bitwarden item holding the sudo password
 
-if [ -z "$BW_SESSION" ]; then
-    echo "!! Failed to unlock Bitwarden vault. Aborting."
-    exit 1
+args=()
+
+if command -v bw >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+  status=$(bw status | jq -r .status)
+
+  if [ "$status" = "unauthenticated" ]; then
+    echo "!! Not logged in to Bitwarden (run 'bw login'). Falling back to -K."
+    args+=(-K)
+  else
+    if [ "$status" = "locked" ]; then
+      echo "==> Unlocking Bitwarden vault..."
+      BW_SESSION=$(bw unlock --raw)
+      export BW_SESSION
+      [ -n "$BW_SESSION" ] || { echo "!! Unlock failed. Aborting."; exit 1; }
+    fi
+
+    echo "==> Syncing Bitwarden vault..."
+    bw sync >/dev/null
+
+    if pw=$(bw get password "$BECOME_ITEM" 2>/dev/null) && [ -n "$pw" ]; then
+      echo "==> Using become password from Bitwarden."
+      tmp=$(mktemp)
+      chmod 600 "$tmp"
+      trap 'rm -f "$tmp"' EXIT
+      jq -n --arg p "$pw" '{ansible_become_password: $p}' > "$tmp"
+      args+=(-e "@$tmp")
+    else
+      echo "!! Item '$BECOME_ITEM' not found. Falling back to -K."
+      args+=(-K)
+    fi
+  fi
+else
+  echo "!! bw or jq not installed. Falling back to -K."
+  args+=(-K)
 fi
-echo "==> Bitwarden vault unlocked."
 
-echo ""
 echo "==> Running Ansible playbook"
-echo "    Enter your sudo/become password when prompted:"
-ansible-playbook -i inventory/hosts.ini playbooks/site.yaml -K
-
+ansible-playbook -i "$INVENTORY" "$PLAYBOOK" "${args[@]}" "$@"
 echo "==> Playbook run complete."

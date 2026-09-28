@@ -21,7 +21,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=shared"
       - "traefik.http.routers.adguard.entrypoints=https"
-      - "traefik.http.routers.adguard.rule=Host(`adguard.toot-net.com`)"
+      - "traefik.http.routers.adguard.rule=Host(`{{ domain_name }}`)"
       - "traefik.http.routers.adguard.tls=true"
       - "traefik.http.routers.adguard.tls.certresolver=cloudflare"
       - "traefik.http.services.adguard.loadbalancer.server.port=80"

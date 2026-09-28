@@ -1,1 +1,2 @@
 adguardhome_password: "{{ lookup('community.general.bitwarden', 'adguard', field='password') | first }}"
+domain_name: adguard.toot-net.com

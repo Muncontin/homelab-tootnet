@@ -4,22 +4,22 @@
   become: true
   roles:
     # Core
-    - common_setup
-    - docker
+    - { role: common_setup, tags: [core, common_setup] }
+    - { role: docker, tags: [core, docker] }
 
     # Networking Stack
-    - traefik
-    - adguardhome
-    - gluetun
+    - { role: traefik, tags: [networking, traefik] }
+    - { role: adguardhome, tags: [networking, adguardhome] }
+    - { role: gluetun, tags: [networking, gluetun] }
 
     # Observability
-    - grafana
+    - { role: grafana, tags: [observability, grafana] }
 
     # Programming Tools
-    - forgejo
+    - { role: forgejo, tags: [dev, forgejo] }
 
     # Databases
-    - mongodb
+    - { role: mongodb, tags: [databases, mongodb] }
 
     # Misc
-    - searxng
+    - { role: searxng, tags: [misc, searxng] }

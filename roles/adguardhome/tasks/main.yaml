@@ -10,9 +10,9 @@
     adguard_admin_password_hash: "{{ adguardhome_password | password_hash('bcrypt', ident='2a') }}"
   no_log: true
 
-- name: Copy docker-compose.yml to the server
-  ansible.builtin.copy:
-    src: ../files/docker-compose.yml
+- name: Copy docker-compose.yml.j2 to the server
+  ansible.builtin.template:
+    src: ../templates/docker-compose.yml.j2
     dest: /opt/containers/adguardhome/docker-compose.yml
     mode: "0644"
 
