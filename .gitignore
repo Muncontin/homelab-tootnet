@@ -1,1 +1,3 @@
 venv/
+.env
+roles/*/defaults/main.yml

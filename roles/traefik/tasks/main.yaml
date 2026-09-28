@@ -1,0 +1,52 @@
+- name: Create application directory
+  ansible.builtin.file:
+    path: /opt/containers/traefik
+    state: directory
+    mode: "0755" # Sets the permissions that the object should have
+
+# traefik expects an encrypted password for authentication to its web ui
+- name: Generate hashed credentials for Traefik
+  ansible.builtin.set_fact:
+    traefik_dashboard_credentials: "{{ traefik_username }}:{{ traefik_password | password_hash('bcrypt', ident='2y', salt='Xk3pQ9mLw2Rv7NbT5yHc1e') }}"
+  no_log: true
+
+- name: Copy the docker files to the system
+  ansible.builtin.copy:
+    src: ../files/
+    dest: /opt/containers/traefik
+    mode: "0644"
+
+- name: Ensure acme.json exists with correct permissions
+  ansible.builtin.file:
+    path: /opt/containers/traefik/data/acme.json
+    state: touch
+    mode: "0600"
+    modification_time: preserve
+    access_time: preserve
+
+- name: Copy the .env template with secrets injected to the server
+  ansible.builtin.template:
+    src: ../templates/.env.j2
+    dest: /opt/containers/traefik/.env
+    mode: "0600"
+  no_log: true
+
+- name: Copy the traefik.yml template with secrets injected to the server
+  ansible.builtin.template:
+    src: ../templates/traefik.yml.j2
+    dest: /opt/containers/traefik/data/traefik.yml
+    mode: "0644"
+  no_log: true
+
+- name: Deploy the Docker Compose application
+  community.docker.docker_compose_v2:
+    project_src: /opt/containers/traefik
+    state: present
+    recreate: always
+  register: compose_result
+
+- name: Show deployment status
+  ansible.builtin.debug:
+    msg: |
+      Deployment complete.
+      Containers: {{ compose_result.containers | length }}

@@ -8,6 +8,7 @@
     - docker
 
     # Networking Stack
+    - traefik
     - adguardhome
     - gluetun
 

@@ -1,0 +1,6 @@
+traefik_username: "INSERT TRAEFIK USERNAME HERE"
+traefik_password: "INSERT TRAEFIK PASSWORD HERE"
+traefik_email: "INSERT EMAIL HERE"
+traefik_dashboard_sub_domain_name: "INSERT DASHBOARD SUBDOMAIN HERE"
+domain_name: "INSERT DOMAIN NAME HERE"
+cloudflare_api_key: "INSERT CLOUDFLARE API KEY HERE"
