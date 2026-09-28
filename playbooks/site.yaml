@@ -12,6 +12,9 @@
     - { role: adguardhome, tags: [networking, adguardhome] }
     - { role: gluetun, tags: [networking, gluetun] }
 
+    # Cloud services
+    - { role: nextcloud, tags: [cloud, nextcloud] }
+
     # Observability
     - { role: grafana, tags: [observability, grafana] }
 

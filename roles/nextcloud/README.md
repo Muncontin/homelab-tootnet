@@ -1,0 +1,3 @@
+This deployment only deploys the admin interface of Nextcloud. It is not a complete installation, further installation is still required by accessing the admin interface and downloading/installing the relevant AIO containers. 
+
+The apache server that serves the user interface is not controlled by docker, and the automatic label discovery method will fail. Hence, Traefik declares the Nextcloud apache server in its own role, and not via the compose file here. 

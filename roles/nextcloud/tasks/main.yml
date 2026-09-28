@@ -1,0 +1,24 @@
+- name: Create application directory
+  ansible.builtin.file:
+    path: /opt/containers/nextcloud
+    state: directory
+    mode: "0755" # Sets the permissions that the object should have
+
+- name: Copy the docker compose template to the server
+  ansible.builtin.template:
+    src: ../templates/docker-compose.yml.j2
+    dest: /opt/containers/nextcloud/docker-compose.yml
+    mode: "0600"
+
+- name: Deploy the Docker Compose application
+  community.docker.docker_compose_v2:
+    project_src: /opt/containers/nextcloud
+    state: present
+    recreate: auto
+  register: compose_result
+
+- name: Show deployment status
+  ansible.builtin.debug:
+    msg: |
+      Deployment complete.
+      Containers: {{ compose_result.containers | length }}

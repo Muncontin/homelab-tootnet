@@ -1,0 +1,14 @@
+http:
+  # Nextcloud AIO master container creates the apache server separately from docker compose, so the apache server route has to be declared here
+  routers:
+    nextcloud:
+      entryPoints: ["https"]
+      rule: "Host(`nextcloud.toot-net.com`)"
+      tls:
+        certResolver: cloudflare
+      service: nextcloud
+  services:
+    nextcloud:
+      loadBalancer:
+        servers:
+          - url: "http://nextcloud-aio-apache:11000" # Match the declared apache port in the docker-compose in the nextcloud role

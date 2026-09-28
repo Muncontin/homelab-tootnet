@@ -10,10 +10,10 @@
     traefik_dashboard_credentials: "{{ traefik_username }}:{{ traefik_password | password_hash('bcrypt', ident='2y', salt='Xk3pQ9mLw2Rv7NbT5yHc1e') }}"
   no_log: true
 
-- name: Copy the docker files to the system
+- name: Copy the config yml files to the system
   ansible.builtin.copy:
-    src: ../files/
-    dest: /opt/containers/traefik
+    src: ../files/data/config/
+    dest: /opt/containers/traefik/data/config/
     mode: "0644"
 
 - name: Ensure acme.json exists with correct permissions

@@ -1,0 +1,34 @@
+name: nextcloud-aio
+services:
+  nextcloud-aio-mastercontainer:
+    image: ghcr.io/nextcloud-releases/all-in-one:latest
+    init: true
+    restart: always
+    container_name: nextcloud-aio-mastercontainer
+    volumes:
+      - nextcloud_aio_mastercontainer:/mnt/docker-aio-config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - shared
+    environment:
+      APACHE_PORT: 11000
+      APACHE_IP_BINDING: "@INTERNAL"
+      APACHE_ADDITIONAL_NETWORK: shared
+      SKIP_DOMAIN_VALIDATION: "true"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared"
+      - "traefik.http.routers.nextcloud-admin.entrypoints=https"
+      - "traefik.http.routers.nextcloud-admin.rule=Host(`{{nextcloud_admin_domain_name}}`)"
+      - "traefik.http.routers.nextcloud-admin.tls=true"
+      - "traefik.http.routers.nextcloud-admin.tls.certresolver=cloudflare"
+      - "traefik.http.services.nextcloud-admin.loadbalancer.server.port=8080"
+      - "traefik.http.services.nextcloud-admin.loadbalancer.server.scheme=https"
+
+volumes:
+  nextcloud_aio_mastercontainer:
+    name: nextcloud_aio_mastercontainer
+
+networks:
+  shared:
+    external: true
