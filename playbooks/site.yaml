@@ -11,6 +11,7 @@
     - { role: traefik, tags: [networking, traefik] }
     - { role: adguardhome, tags: [networking, adguardhome] }
     - { role: gluetun, tags: [networking, gluetun] }
+    - { role: dockhand, tags: [networking, dockhand] }
 
     # Cloud services
     - { role: nextcloud, tags: [cloud, nextcloud] }

@@ -1,0 +1,24 @@
+- name: Create application directory
+  ansible.builtin.file:
+    path: /opt/containers/dockhand
+    state: directory
+    mode: "0755" # Sets the permissions that the object should have
+
+- name: Copy the template dockhand config file to the system
+  ansible.builtin.template:
+    src: ../templates/docker-compose.yml.j2
+    dest: /opt/containers/dockhand/docker-compose.yml
+    mode: "0644"
+
+- name: Deploy the Docker Compose application
+  community.docker.docker_compose_v2:
+    project_src: /opt/containers/dockhand
+    state: present
+    recreate: always
+  register: compose_result
+
+- name: Show deployment status
+  ansible.builtin.debug:
+    msg: |
+      Deployment complete.
+      Containers: {{ compose_result.containers | length }}
