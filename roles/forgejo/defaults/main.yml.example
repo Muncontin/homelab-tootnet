@@ -1,0 +1,5 @@
+domain_name: <DOMAIN_NAME_HERE>
+secret_key: "<SECRET_KEY_HERE>"
+forgejo_admin_user: <USERNAME_HERE>
+forgejo_admin_email: <EMAIL_HERE>
+forgejo_admin_password: <PASSWORD_HERE>

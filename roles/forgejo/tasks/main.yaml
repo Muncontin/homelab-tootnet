@@ -2,7 +2,22 @@
   ansible.builtin.file:
     path: /opt/containers/forgejo
     state: directory
-    mode: "0755" # Sets the permissions that the object should have
+    mode: "0755"
+
+- name: Create Forgejo data directory
+  ansible.builtin.file:
+    path: /opt/containers/forgejo/data
+    state: directory
+    owner: "1000"
+    group: "1000"
+    mode: "0755"
+
+- name: Copy .env with injected secrets to server
+  ansible.builtin.template:
+    src: ../templates/.env.j2
+    dest: /opt/containers/forgejo/.env
+    mode: "0600"
+  no_log: true
 
 - name: Copy docker-compose.yml to the server
   ansible.builtin.copy:
@@ -22,3 +37,34 @@
     msg: |
       Deployment complete.
       Containers: {{ compose_result.containers | length }}
+
+- name: List Forgejo users
+  ansible.builtin.command: docker exec -u git forgejo forgejo admin user list
+  register: forgejo_users
+  changed_when: false
+  retries: 15
+  delay: 4
+  until: forgejo_users.rc == 0
+
+- name: Create Forgejo admin user
+  ansible.builtin.command:
+    argv:
+      - docker
+      - exec
+      - -u
+      - git
+      - forgejo
+      - forgejo
+      - admin
+      - user
+      - create
+      - --admin
+      - --username
+      - "{{ forgejo_admin_user }}"
+      - --email
+      - "{{ forgejo_admin_email }}"
+      - --password
+      - "{{ forgejo_admin_password }}"
+      - --must-change-password=false
+  when: forgejo_admin_user not in forgejo_users.stdout
+  no_log: true

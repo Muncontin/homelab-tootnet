@@ -8,17 +8,30 @@ services:
   server:
     image: codeberg.org/forgejo/forgejo:16
     container_name: forgejo
+    restart: always
     environment:
       - USER_UID=1000
       - USER_GID=1000
-    restart: always
+      - FORGEJO__server__DOMAIN=${DOMAIN_NAME}
+      - FORGEJO__server__ROOT_URL=https://${DOMAIN_NAME}/
+      - FORGEJO__server__SSH_DOMAIN=${DOMAIN_NAME}
+      - FORGEJO__server__SSH_PORT=222
+      - FORGEJO__security__INSTALL_LOCK=true
+      - FORGEJO__security__SECRET_KEY=${FORGEJO_SECRET_KEY}
+      - FORGEJO__service__DISABLE_REGISTRATION=true
     networks:
       - forgejo
       - shared
     volumes:
-      - ./forgejo:/data
+      - ./data:/data
       - /etc/localtime:/etc/localtime:ro
     ports:
-      #- '8086:3000'
       - '222:22'
-
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared"
+      - "traefik.http.routers.forgejo.entrypoints=https"
+      - "traefik.http.routers.forgejo.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.forgejo.tls=true"
+      - "traefik.http.routers.forgejo.tls.certresolver=cloudflare"
+      - "traefik.http.services.forgejo.loadbalancer.server.port=3000"
