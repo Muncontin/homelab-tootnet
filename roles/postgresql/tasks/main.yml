@@ -1,0 +1,36 @@
+- name: Ensure db-net exists
+  community.docker.docker_network:
+    name: db-net
+    state: present
+
+- name: Create application directory
+  ansible.builtin.file:
+    path: /opt/containers/postgresql
+    state: directory
+    mode: "0755" # Sets the permissions that the object should have
+
+- name: Copy the config yml files to the system
+  ansible.builtin.copy:
+    src: ../files/
+    dest: /opt/containers/postgresql
+    mode: "0644"
+
+- name: Copy the .env template with secrets injected to the server
+  ansible.builtin.template:
+    src: ../templates/.env.j2
+    dest: /opt/containers/postgresql/.env
+    mode: "0600"
+  no_log: true
+
+- name: Deploy the Docker Compose application
+  community.docker.docker_compose_v2:
+    project_src: /opt/containers/postgresql
+    state: present
+    recreate: always
+  register: compose_result
+
+- name: Show deployment status
+  ansible.builtin.debug:
+    msg: |
+      Deployment complete.
+      Containers: {{ compose_result.containers | length }}

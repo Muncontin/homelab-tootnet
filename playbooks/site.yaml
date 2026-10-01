@@ -24,6 +24,7 @@
 
     # Databases
     - { role: mongodb, tags: [databases, mongodb] }
+    - { role: postgresql, tags: [databases, postgresql, sql] }
 
     # Misc
     - { role: searxng, tags: [misc, searxng] }

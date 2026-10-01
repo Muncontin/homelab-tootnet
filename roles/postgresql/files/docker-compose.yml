@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: postgres-container
+    environment:
+      POSTGRES_USER: ${USERNAME}
+      POSTGRES_PASSWORD: ${PASSWORD}
+    networks:
+      - db-net
+    ports:
+      - "${HOST_IP}:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+volumes:
+  postgres_data:
+
+networks:
+  db-net:
+    external: true  
